@@ -1,4 +1,4 @@
-package com.jobs.jobs;
+package com.jobs.jobs.entities;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
