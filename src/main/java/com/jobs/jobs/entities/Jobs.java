@@ -1,4 +1,4 @@
-package com.jobs.jobs;
+package com.jobs.jobs.entities;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -47,7 +47,8 @@ public class Jobs {
     @Column(name = "posted_at")
     private ZonedDateTime postedAt;
 
-    @Column(name = "raw_payload", columnDefinition = "jsonb")
+    @Column(name = "raw_payload" )//columnDefinition = "jsonb")
+    
     private String rawPayload;
 
     @Column(name = "ingested_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
