@@ -45,6 +45,14 @@ public class JobController {
         return ResponseEntity.of(jobRepo.findById(id));
     }
 
+
+//delete job
+@DeleteMapping("delJob")
+public boolean deleteJob(@RequestParam Integer id){
+    Jobs jToDelete=jobRepo.findById(id).get();
+    jobRepo.delete(jToDelete);
+    return true;
+}
     @GetMapping
     public Page<Jobs> listJobs(Pageable pageable) {
         int size = Math.min(Math.max(pageable.getPageSize(), 1), 20);
