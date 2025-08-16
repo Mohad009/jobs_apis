@@ -1,7 +1,7 @@
 package com.jobs.jobs.controllers;
 
 import java.net.URI;
-
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,6 +32,12 @@ public class JobController {
         return ResponseEntity.created(URI.create("/api/jobs/" + saved.getId())).body(saved);
     }
 
+    //Return all jobs
+    @GetMapping("allJobs")
+    public List<Jobs> getAllJobs(){
+        List<Jobs> jobsDB=jobRepo.findAll();
+        return jobsDB;
+    }
 
     //return job by id
     @GetMapping("/{id}")
