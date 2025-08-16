@@ -1,7 +1,7 @@
 package com.jobs.jobs.controllers;
 
 import java.net.URI;
-import java.util.List;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,8 +20,8 @@ public class JobController {
 
     @Autowired
     JobRepository jobRepo;
-
-    @PostMapping
+    //create job
+    @PostMapping("/createjob")
     public ResponseEntity<?> createJob(@RequestBody Jobs jobs) {
         boolean exists = jobRepo.findBySourceIdAndSourceJobId(jobs.getSourceId(), jobs.getSourceJobId()).isPresent();
         if (exists) {
@@ -32,6 +32,8 @@ public class JobController {
         return ResponseEntity.created(URI.create("/api/jobs/" + saved.getId())).body(saved);
     }
 
+
+    //return job by id
     @GetMapping("/{id}")
     public ResponseEntity<Jobs> getJobById(@PathVariable Integer id) {
         return ResponseEntity.of(jobRepo.findById(id));
