@@ -26,6 +26,7 @@ public class JobController {
     @Autowired
     JobRepository jobRepo;
 
+
     @PostMapping
     public ResponseEntity<?> createJob(@RequestBody Jobs jobs) {
         boolean exists = jobRepo.findBySourceIdAndSourceJobId(jobs.getSourceId(), jobs.getSourceJobId()).isPresent();
@@ -51,46 +52,73 @@ public class JobController {
     }
 
     // IGNORE THIS FUNCTION
-    @GetMapping("/search")
-    public ResponseEntity<List<Jobs>> searchJobs(
-            @RequestParam (required = false) String keyword,
-            @RequestParam (required = false) String location,
-            @RequestParam (required = false) BigDecimal salary_min,
-            @RequestParam (required = false) BigDecimal salary_max
-            //@RequestParam (required = false) String sentiment
+    // @GetMapping("/search")
+    // public ResponseEntity<List<Jobs>> searchJobs(
+    //         @RequestParam (required = false) String keyword,
+    //         @RequestParam (required = false) String location,
+    //         @RequestParam (required = false) BigDecimal salary_min,
+    //         @RequestParam (required = false) BigDecimal salary_max
+    //         //@RequestParam (required = false) String sentiment
+    // ) {
+    //     List<Jobs> jobs = jobRepo.searchJobs(keyword, location, salary_min, salary_max);
+    //     return new ResponseEntity<>(jobs, HttpStatus.OK);
+    // }
+
+     @GetMapping("/search2")
+    public List<Jobs> search(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String location,
+            @RequestParam(name = "salary_min", required = false) BigDecimal salaryMin,
+            @RequestParam(name = "salary_max", required = false) BigDecimal salaryMax,
+            @RequestParam(required = false) String sentiment
     ) {
-        List<Jobs> jobs = jobRepo.searchJobs(keyword, location);
-        return new ResponseEntity<>(jobs, HttpStatus.OK);
+
+        var spec = buildJobsSpec(keyword, location, salaryMin, salaryMax, sentiment);
+        return jobRepo.findAll(spec);
     }
 
-    @GetMapping("/search2")
-    public Map<String, String> getRequest(@RequestParam Map<String, String> multipleParams){
-        String location;
-        String keyword;
-        String salary_min;
-        String salary_max;
-        System.out.printf(multipleParams.toString());
-        if (multipleParams.containsKey("location")){
-            location = String.valueOf(multipleParams.get("location"));
-            System.out.println("Location is " + location);
-        }
-        if (multipleParams.containsKey("keyword")){
-            keyword = String.valueOf(multipleParams.get("keyword"));
-            System.out.println("Keyword is " + keyword);
-        }
-        if (multipleParams.containsKey("salary_min")){
-            salary_min = String.valueOf(multipleParams.get("salary_min"));
-            System.out.println("Salary Min is " + salary_min);
-        }
-        if (multipleParams.containsKey("salary_max")){
-            salary_max = String.valueOf(multipleParams.get("salary_max"));
-            System.out.println("Salary Max is " + salary_max);
-        }
-        BigDecimal salary_min2 = BigDecimal.valueOf(Double.parseDouble(multipleParams.get("salary_min")));
-        BigDecimal salary_max2 = BigDecimal.valueOf(Double.parseDouble(multipleParams.get("salary_max")));
+    private org.springframework.data.jpa.domain.Specification<Jobs> buildJobsSpec(
+            String keyword,
+            String location,
+            BigDecimal salaryMin,
+            BigDecimal salaryMax,
+            String sentiment
+    ) {
+        return (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
 
+            // location LIKE %value%
+            if (hasText(location)) {
+                predicates.add(cb.like(cb.lower(root.get("location")), "%" + location.toLowerCase() + "%"));
+            }
 
-        return multipleParams;
+            // keyword across multiple fields (title OR company OR description)
+            if (hasText(keyword)) {
+                String kw = "%" + keyword.toLowerCase() + "%";
+                var titleP = cb.like(cb.lower(root.get("title")), kw);
+                var companyP = cb.like(cb.lower(root.get("company")), kw);
+                var descP = cb.like(cb.lower(root.get("description")), kw);
+                predicates.add(cb.or(titleP, companyP, descP));
+            }
+
+            if (salaryMin != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("salaryMin"), salaryMin));
+            }
+            if (salaryMax != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("salaryMax"), salaryMax));
+            }
+
+            if (hasText(sentiment)) {
+                // assumes a String field named 'sentiment' exists in Jobs
+                predicates.add(cb.equal(cb.lower(root.get("sentiment")), sentiment.toLowerCase()));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+    }
+
+    private boolean hasText(String s) {
+        return s != null && !s.trim().isEmpty();
     }
 
 
