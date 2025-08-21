@@ -3,11 +3,13 @@ package com.jobs.jobs.controllers;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +50,7 @@ public class JobController {
         return jobRepo.findAll(safe);
     }
 
+    // IGNORE THIS FUNCTION
     @GetMapping("/search")
     public ResponseEntity<List<Jobs>> searchJobs(
             @RequestParam (required = false) String keyword,
@@ -56,7 +59,39 @@ public class JobController {
             @RequestParam (required = false) BigDecimal salary_max
             //@RequestParam (required = false) String sentiment
     ) {
-        List<Jobs> jobs = jobRepo.searchJobs(keyword, location, salary_min, salary_max);
+        List<Jobs> jobs = jobRepo.searchJobs(keyword, location);
         return new ResponseEntity<>(jobs, HttpStatus.OK);
     }
+
+    @GetMapping("/search2")
+    public Map<String, String> getRequest(@RequestParam Map<String, String> multipleParams){
+        String location;
+        String keyword;
+        String salary_min;
+        String salary_max;
+        System.out.printf(multipleParams.toString());
+        if (multipleParams.containsKey("location")){
+            location = String.valueOf(multipleParams.get("location"));
+            System.out.println("Location is " + location);
+        }
+        if (multipleParams.containsKey("keyword")){
+            keyword = String.valueOf(multipleParams.get("keyword"));
+            System.out.println("Keyword is " + keyword);
+        }
+        if (multipleParams.containsKey("salary_min")){
+            salary_min = String.valueOf(multipleParams.get("salary_min"));
+            System.out.println("Salary Min is " + salary_min);
+        }
+        if (multipleParams.containsKey("salary_max")){
+            salary_max = String.valueOf(multipleParams.get("salary_max"));
+            System.out.println("Salary Max is " + salary_max);
+        }
+        BigDecimal salary_min2 = BigDecimal.valueOf(Double.parseDouble(multipleParams.get("salary_min")));
+        BigDecimal salary_max2 = BigDecimal.valueOf(Double.parseDouble(multipleParams.get("salary_max")));
+
+
+        return multipleParams;
+    }
+
+
 }

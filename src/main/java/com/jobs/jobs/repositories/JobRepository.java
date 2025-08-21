@@ -18,8 +18,12 @@ public interface JobRepository extends JpaRepository<Jobs,Integer>{
             //"j.salaryMin = ?salary_min OR " +
             //"LOWER(j.salaryMax) LIKE LOWER(CONCAT('%', :salary_max, '%'))")
             // "LOWER(j.sentiment) LIKE LOWER(CONCAT('%', :sentiment, '%'))")
-    public List<Jobs> searchJobs(String location, String keyword, BigDecimal salary_min, BigDecimal salary_max);
-    
+
+
+
+
+    public List<Jobs> searchJobs(String location, String keyword);
+
     Optional<Jobs> findBySourceIdAndSourceJobId(String sourceId, String sourceJobId);
 
     Optional<Jobs> getDistinctByDescription(String description);
